@@ -1,0 +1,13 @@
+{%extends 'home.html'%}
+{% block content %}
+<div class="user-detail">
+    <h1>User Info</h1>
+    <img src="{{ g.user.image_url }}" alt="A picture of {{ g.user.username }}">
+    <h3> <u>Username:</u>  <i>{{g.user.username }}</i></h3>
+    <h3> <u>Email:</u>  <i>{{g.user.email }}</i></h3>
+    <h3> <u>Survey Reminder Time:</u> <i>{{g.user.survey_reminder_time }}</i></h3>
+    <h3> <u>Surveys Completed:</u> <i>{{g.user.surveys_completed }}</i></h3>
+    <h3> <u>Member Since:</u> <i>{{g.user.member_since }}</i></h3>
+
+</div>
+{% endblock %}

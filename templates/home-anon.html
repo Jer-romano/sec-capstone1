@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a href="/" class="navbar-brand">
+          <img src="/static/images/optimal_logo.png" alt="logo">
+          <span>Optimal</span>
+        </a>
+        <a href="/about" class="btn btn-primary">About</a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        {% if not g.user %}
+        <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
+        <li><a href="/login" class="btn btn-success">Log in</a></li>
+        {% else %}
+        <li>
+          <a href="/users/{{ g.user.id }}">
+            <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
+          </a>
+        </li>
+        <li><a href="/logout" class="btn btn-warning">Log out</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+{% endblock navbar %}
+
+
+{% block content %}
+<div class="home-hero">
+    <div class="home-text">
+        <h1>The Path To Finding the Best Medication For You Starts Here.</h1>
+    </div>
+    <div class="justify-content-center">
+        <a href="/login" class="btn btn-lg btn-success">Log in</a>
+    </div>
+    <div class="justify-content-center">
+        <p>New to Optimal? Create an account today.</p>
+        <a href="/signup" class="btn btn-lg btn-primary">Sign up</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{%extends 'base.html'%}
+
+{% block content %}
+<div class="row justify-content-md-center">
+  <div class="row filler">
+
+  </div>
+  <div class="col-md-8 col-lg-8">
+    <h3>As you go about your day, there are many things that can affect your mood. These can include how much you exercised,
+        your interactions with others, your workday, and more. When trying to evaluate the effectiveness of an antidepressant,
+        it's important to notice and record these external factors so that we don't confuse the effect of a drug with the effect 
+        of an external factor.
+   </h3>
+   <h3>
+       On the next page, you'll be able to input up to five external factors that you think affect your mood. You will
+       then be asked about them when you take your daily survey. If you'd rather not add any, just click 'skip'.
+   </h3>
+   <form action="/external_factors">
+    <button class="btn btn-primary">Next</button>
+   </form>
+  </div>
+</div>
+
+{%endblock%}

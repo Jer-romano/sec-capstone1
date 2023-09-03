@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a href="/" class="navbar-brand">
+          <img src="/static/images/optimal_logo.png" alt="logo">
+          <span>Optimal</span>
+        </a>
+        <a href="/about" class="btn btn-primary">About</a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        {% if not g.user %}
+            <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
+            <li><a href="/login" class="btn btn-success">Log in</a></li>
+        {% else %}
+            <li>Logged in as: {{ g.user.username }}</li>
+            <li>
+            <a href="/users/{{ g.user.id }}">
+                <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
+            </a>
+            </li>
+            {% if not survey_done %}
+                <li> <a href="/take_survey" class="btn btn-primary">Take Survey</a></li>
+            {% endif %}
+            <li><a href="/logout" class="btn btn-warning">Log out</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+{% endblock navbar %}
+
+
+{% block content %}
+{% endblock %}

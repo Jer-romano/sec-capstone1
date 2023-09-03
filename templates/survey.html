@@ -1,0 +1,23 @@
+{%extends 'base.html'%}
+
+{%block content%}
+<div class="row justify-content-md-center">
+    <div class="col-md-7 col-lg-5 signup">
+      <h2 class="join-message">Daily Survey</h2>
+      <form method="POST" action="/take_survey">
+          {{ form.hidden_tag() }}
+  
+          {% for field in form if field.widget.input_type != 'hidden' %}
+            {% for error in field.errors %}
+                  <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+            {{ field.label }}
+            {{ field( class="form-control") }}
+          {% endfor %}
+        <button class="btn btn-primary btn-lg btn-block">Submit</button>
+      </form>
+      <h4>As a reminder, the external factors you selected were</h4>
+    </div>
+  </div>
+
+{% endblock %}
