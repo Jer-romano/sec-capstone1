@@ -40,7 +40,7 @@ toolbar = DebugToolbarExtension(app)
 app.debug = True
 connect_db(app)
 
-db.drop_all()
+#db.drop_all()
 db.create_all()
 ##############################################################################
 # User signup/login/logout
