@@ -24,6 +24,7 @@
             {% if not survey_done %}
                 <li> <a href="/take_survey" class="btn btn-primary">Take Survey</a></li>
             {% endif %}
+            <li> <a href="/show_summaries" class="btn btn-secondary">Summaries</a></li>
             <li><a href="/logout" class="btn btn-warning">Log out</a></li>
         {% endif %}
       </ul>
@@ -33,4 +34,14 @@
 
 
 {% block content %}
+<div class="home-hero">
+
+  <div class="photo-cred">
+    Photo by 
+    <a href="https://unsplash.com/@cristina_gottardi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
+    Cristina Gottardi</a> on
+    <a href="https://unsplash.com/photos/wVTGdIGdojc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
+     Unsplash</a>
+  </div>
+</div>
 {% endblock %}

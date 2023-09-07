@@ -1,0 +1,6 @@
+Hello ${USERNAME}! 
+
+It looks like you haven't yet completed your daily survey. Sign in now to complete it. 
+ 
+Best,
+The Optimal Team

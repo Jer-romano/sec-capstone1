@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, TimeField, SelectField, IntegerField
+from wtforms import StringField, PasswordField, TextAreaField, TimeField, SelectField, IntegerField, FieldList, FormField
 from wtforms.validators import DataRequired, InputRequired, Email, Length, EqualTo
 from datetime import datetime
 
+# regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
 
 class RatingForm(FlaskForm):
     """Form for completing a daily rating"""
@@ -18,13 +19,14 @@ class RatingForm(FlaskForm):
 #consider installing email validator
 class UserAddForm(FlaskForm):
     """Form for adding users."""
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     username = StringField('Username', validators=[DataRequired(), Length(max=40)])
     email = StringField('E-mail', validators=[DataRequired(), Length(max=40), Email(message="Invalid email.")])
     password = PasswordField("Password", validators=[InputRequired(), Length(min=6, max=30),
                             EqualTo('confirm', message="Passwords must match.")])
     confirm = PasswordField("Confirm Password", validators=[InputRequired()])
     image_url = StringField('(Optional) Profile Image URL')
+    #nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    #num_of_meds = SelectField("How many medications are you currently taking?", choices=nums)
     survey_reminder_time = TimeField("Survey Reminder Time",  default=datetime.now(),
      validators=[InputRequired()])
 
@@ -37,14 +39,14 @@ class ExternalFactorsForm(FlaskForm):
     ef4 = StringField("External Factor #4")
     ef5 = StringField("External Factor #5")
 
+class MedForm(FlaskForm):
+    """Form for recording a single medication"""
+    med_name = StringField("Medication #1 Brand Name", validators=[InputRequired()])
+    med_dosage = IntegerField("Dosage (in mg)", validators=[InputRequired()])
 
-class MedicationForm(FlaskForm):
-    """Form for recording a user's medications"""
-
-    med1 = StringField("Medication Name")
-    med1_dosage = IntegerField("Dosage (in mg)", validators=[InputRequired()])
-    #How to make it so that a user can add more medications to the form if necessary?
-
+class MedicationsForm(FlaskForm):
+    """Form for recording all of a user's medications"""
+    meds = FieldList(FormField(MedForm))
 
 class LoginForm(FlaskForm):
     """Login form."""

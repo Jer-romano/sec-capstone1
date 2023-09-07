@@ -1,34 +1,46 @@
-import os
+import os, time, atexit
+#from schedule import every, repeat, run_pending
+from datetime import datetime
 from flask import Flask, render_template, request, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
+from apscheduler.schedulers.background import BackgroundScheduler
 
-from forms import UserAddForm, LoginForm, ExternalFactorsForm, RatingForm
-from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor
+# Still need to
+# Create reminder email function
+# Create place for user to view summaries
+# Flash message to user when a new summary is available 
+# Create homepage for logged in users
+# Incorporate an API somehow
+# Maybe a 'medicines' page where a info about medications can be listed
+
+from forms import UserAddForm, LoginForm, ExternalFactorsForm, RatingForm, MedForm, MedicationsForm
+from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medications
 from decorators import check_user
-from datetime import datetime
+from helpers import send_reminder
 
 CURR_USER_KEY = "curr_user"
 
 app = Flask(__name__)
+scheduler = BackgroundScheduler()
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ.get('DATABASE_URL', 'postgresql:///optimal'))
 
-app.app_context().push()
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
+# TODO
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret") #Change this!!!
+app.app_context().push()
 toolbar = DebugToolbarExtension(app)
 
 app.debug = True
 connect_db(app)
 
-#db.drop_all()
+db.drop_all()
 db.create_all()
 ##############################################################################
 # User signup/login/logout
@@ -56,7 +68,6 @@ def do_logout():
         del session[CURR_USER_KEY]
         g.user = None
 
-
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
     """Handle user signup.
@@ -80,7 +91,7 @@ def signup():
             )
             db.session.commit()
         except IntegrityError:
-            flash("Username already taken", 'danger')
+            flash("Username or Email already in use", 'danger')
             return render_template('users/signup.html', form=form)
 
         do_login(user)
@@ -123,7 +134,7 @@ def factors_form():
         db.session.commit()
         return redirect("/")
     else:
-        return render_template("users/factors.html", form=form)
+        return render_template("users/factors_form.html", form=form)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -166,9 +177,7 @@ def homepage():
     if not g.user:
         return render_template("home-anon.html")
     else:
-        print(g.user.last_completed_survey.date())
-        print(datetime.today().date())
-        if g.user.last_completed_survey.date() == datetime.today().date():
+        if g.user.last_completed_survey == datetime.today().date():
             survey_done = True
         else:
             survey_done = False
@@ -206,8 +215,11 @@ def take_survey():
     else:
         return render_template("survey.html", form=form)
 
+#@repeat(every().sunday.at("20:00"))
 def create_summaries():
-    """Create weekly summaries for every user in the DB"""
+    """Create weekly summaries for every user in the DB
+        This is scheduled to happen every Sunday at 8PM.
+    """
     target_date = find_past_date(7)
     users = User.query.all()
     summary_list = []
@@ -246,6 +258,67 @@ def create_summaries():
     db.session.add_all(summary_list)
     db.session.commit()
 
+@check_user
+@app.route("/show_summaries")
+def show_summaries():
+    """Display page of past summaries for the User."""
+    summaries = Summary.query.filter_by(user_id=g.user.id).all()
+    return render_template("/users/summaries.html", summaries=summaries)
+
+
+@check_user
+@app.route('/medications', methods=["GET", "POST"])
+def medications_form():
+    """Handle display of/submitting of medications form"""
+
+    form = MedicationsForm()
+
+    if form.validate_on_submit():
+        meds = Medications(
+            med1 = form.med1.data,
+            med1_dosage = form.med1_dosage.data,
+            med2 = form.med2.data,
+            med2_dosage = form.med2_dosage.data,
+            med3 = form.med3.data,
+            med3_dosage = form.med3_dosage.data,
+            user_id = g.user.id
+        )
+        db.session.add(meds)
+        db.session.commit()
+        return redirect("/")
+    else:
+        return render_template("users/med_form.html", form=form)
+
+
+@check_user
+@app.route("/medications", methods=["GET", "POST"])
+def show_medications():
+    """Show user medications"""
+    pass
+
+#@repeat(every(5).minutes)
+def send_reminder_emails():
+    """Writes and sends reminder email to users who haven't 
+        yet completed their survey today
+        Have to check that
+         1) The current time is 'past' a user's survey reminder time.
+         2) The user hasn't already been sent a reminder email today
+         3) The user hasn't completed a survey today. 
+        """ 
+    with app.app_context():
+        today = datetime.now()
+        users_to_remind = User.query.filter(today.time() > User.survey_reminder_time,
+                                            today.date() > User.last_reminder_email,
+                                            today.date() != User.last_completed_survey).all()
+        
+        if users_to_remind:
+            print("found user to remind")
+            for user in users_to_remind:
+                send_reminder(user)
+                user.last_reminder_email = today.date()
+                db.session.add(user)
+            db.session.commit()
+
 
 ##############################################################################
 # Turn off all caching in Flask
@@ -263,3 +336,13 @@ def add_header(req):
     req.headers["Expires"] = "0"
     req.headers['Cache-Control'] = 'public, max-age=0'
     return req
+
+# while True:
+#     run_pending()
+#     time.sleep(1)
+
+scheduler.add_job(send_reminder_emails, "interval", minutes=1)
+scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='sun', hour=20)
+scheduler.start()
+
+atexit.register(lambda: scheduler.shutdown())

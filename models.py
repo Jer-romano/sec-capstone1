@@ -57,8 +57,13 @@ class User(db.Model):
     )
 
     last_completed_survey = db.Column( #The last time the user completed a survey
-        db.DateTime,
+        db.Date,
         default=starter_date #pick a random date in the past as default
+    )
+
+    last_reminder_email = db.Column(
+        db.Date,
+        default=starter_date
     )
 
     member_since = db.Column(
@@ -72,7 +77,7 @@ class User(db.Model):
         nullable=False,
         default=0
     )
-    
+
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
 
@@ -261,6 +266,34 @@ class Summary(db.Model):
     )
 
     user = db.relationship('User')
+
+class Medications(db.Model):
+    """A model for storing the medications a user is taking."""
+
+    __tablename__ = 'medications'
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    med_name = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+    med_dosage = db.Column(
+        db.Integer
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+    )
+
+    user = db.relationship('User', backref="meds")
+
 
 def connect_db(app):
     """Connect this database to provided Flask app.
