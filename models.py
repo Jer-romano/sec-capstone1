@@ -259,6 +259,10 @@ class Summary(db.Model):
                 db.Float
     )
 
+    med_effectiveness_score = db.Column(
+                db.Float
+    )
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete='CASCADE'),
@@ -267,7 +271,7 @@ class Summary(db.Model):
 
     user = db.relationship('User')
 
-class Medications(db.Model):
+class Medication(db.Model):
     """A model for storing the medications a user is taking."""
 
     __tablename__ = 'medications'

@@ -39,14 +39,19 @@ class ExternalFactorsForm(FlaskForm):
     ef4 = StringField("External Factor #4")
     ef5 = StringField("External Factor #5")
 
-class MedForm(FlaskForm):
-    """Form for recording a single medication"""
-    med_name = StringField("Medication #1 Brand Name", validators=[InputRequired()])
-    med_dosage = IntegerField("Dosage (in mg)", validators=[InputRequired()])
+# class MedForm(FlaskForm):
+#     """Form for recording a single medication"""
+#     med_name = StringField("Brand Name of Medication", validators=[InputRequired()])
+#     med_dosage = IntegerField("Dosage (in mg)", validators=[InputRequired()])
+
+# class MedicationsForm(FlaskForm):
+#     """Form for recording all of a user's medications"""
+#     meds = FieldList(FormField(MedForm), min_entries=1, max_entries=5)
 
 class MedicationsForm(FlaskForm):
     """Form for recording all of a user's medications"""
-    meds = FieldList(FormField(MedForm))
+    med_name = StringField("Brand Name of Medication", validators=[InputRequired()])
+    med_dosage = IntegerField("Dosage (in mg)", validators=[InputRequired()])
 
 class LoginForm(FlaskForm):
     """Login form."""

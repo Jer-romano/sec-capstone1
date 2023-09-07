@@ -14,8 +14,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # Incorporate an API somehow
 # Maybe a 'medicines' page where a info about medications can be listed
 
-from forms import UserAddForm, LoginForm, ExternalFactorsForm, RatingForm, MedForm, MedicationsForm
-from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medications
+from forms import UserAddForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
+from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medication
 from decorators import check_user
 from helpers import send_reminder
 
@@ -40,7 +40,7 @@ toolbar = DebugToolbarExtension(app)
 app.debug = True
 connect_db(app)
 
-#db.drop_all()
+db.drop_all()
 db.create_all()
 ##############################################################################
 # User signup/login/logout
@@ -132,7 +132,7 @@ def factors_form():
         )
         db.session.add(factors)
         db.session.commit()
-        return redirect("/")
+        return redirect("/medications")
     else:
         return render_template("users/factors_form.html", form=form)
 
@@ -250,10 +250,10 @@ def create_summaries():
                             num_of_days_meds_taken=took_all_meds_sum,
                             average_ef=avg_ef_rating,
                             average_med=avg_med_rating,
-                            user_id=user.id
+                            user_id=user.id,
+                            med_effectiveness_score = avg_mood + avg_ef_rating
                             )
             summary_list.append(summary)
-            med_effectiveness_score = avg_mood + avg_ef_rating
     
     db.session.add_all(summary_list)
     db.session.commit()
@@ -274,17 +274,14 @@ def medications_form():
     form = MedicationsForm()
 
     if form.validate_on_submit():
-        meds = Medications(
-            med1 = form.med1.data,
-            med1_dosage = form.med1_dosage.data,
-            med2 = form.med2.data,
-            med2_dosage = form.med2_dosage.data,
-            med3 = form.med3.data,
-            med3_dosage = form.med3_dosage.data,
+        med = Medication(
+            med_name = form.med_name.data,
+            med_dosage = form.med_dosage.data,
             user_id = g.user.id
         )
-        db.session.add(meds)
+        db.session.add(med)
         db.session.commit()
+        flash("User successfully created. Welcome!", "success")
         return redirect("/")
     else:
         return render_template("users/med_form.html", form=form)
