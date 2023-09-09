@@ -1,4 +1,27 @@
 {%extends 'base.html'%}
+{% block navbar %}
+<nav class="navbar navbar-expand">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a href="/" class="navbar-brand">
+          <img src="/static/images/optimal_logo.png" alt="logo">
+          <span>Optimal</span>
+        </a>
+        <a href="/about" class="btn btn-primary">About</a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+            <li>Logged in as: {{ g.user.username }}</li>
+            <li>
+            <a href="/users/{{ g.user.id }}">
+                <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
+            </a>
+            </li>
+            <li> <a href="/show_summaries" class="btn btn-secondary">Summaries</a></li>
+            <li><a href="/logout" class="btn btn-warning">Log out</a></li>
+      </ul>
+    </div>
+  </nav>
+{% endblock navbar %}
 
 {%block content%}
 <div class="row justify-content-md-center">
@@ -16,7 +39,6 @@
           {% endfor %}
         <button class="btn btn-primary btn-lg btn-block">Submit</button>
       </form>
-      <h4>As a reminder, the external factors you selected were</h4>
     </div>
   </div>
 

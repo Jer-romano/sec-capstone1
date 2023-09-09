@@ -11,22 +11,17 @@
         <a href="/about" class="btn btn-primary">About</a>
       </div>
       <ul class="nav navbar-nav navbar-right">
-        {% if not g.user %}
-            <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
-            <li><a href="/login" class="btn btn-success">Log in</a></li>
-        {% else %}
             <li>Logged in as: {{ g.user.username }}</li>
             <li>
             <a href="/users/{{ g.user.id }}">
                 <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
             </a>
             </li>
-            {% if not survey_done %}
-                <li> <a href="/take_survey" class="btn btn-primary">Take Survey</a></li>
+            {% if not session['survey_done'] %}
+                <li> <a href="/take_survey" class="btn btn-success">Take Survey</a></li>
             {% endif %}
             <li> <a href="/show_summaries" class="btn btn-secondary">Summaries</a></li>
             <li><a href="/logout" class="btn btn-warning">Log out</a></li>
-        {% endif %}
       </ul>
     </div>
   </nav>
@@ -35,6 +30,10 @@
 
 {% block content %}
 <div class="home-hero">
+  <div id="quote-div">
+    <h3>{{ quote['text'] }}</h3>
+    <h4>- {{ quote['author'] }}</h4>
+  </div>
 
   <div class="photo-cred">
     Photo by 
@@ -44,4 +43,5 @@
      Unsplash</a>
   </div>
 </div>
+<!-- <script src="{{ url_for('static', filename='script.js') }}"></script> -->
 {% endblock %}

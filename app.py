@@ -7,17 +7,14 @@ from sqlalchemy.exc import IntegrityError
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Still need to
-# Create reminder email function
-# Create place for user to view summaries
+# Test summary function
 # Flash message to user when a new summary is available 
-# Create homepage for logged in users
-# Incorporate an API somehow
 # Maybe a 'medicines' page where a info about medications can be listed
 
 from forms import UserAddForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
 from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medication
 from decorators import check_user
-from helpers import send_reminder
+from helpers import send_reminder, get_quote
 
 CURR_USER_KEY = "curr_user"
 
@@ -40,7 +37,7 @@ toolbar = DebugToolbarExtension(app)
 app.debug = True
 connect_db(app)
 
-db.drop_all()
+#db.drop_all()
 db.create_all()
 ##############################################################################
 # User signup/login/logout
@@ -102,17 +99,23 @@ def signup():
     
 @app.route("/about")
 def about_page():
+    """Displays a simple page explaining the purpose of the website."""
     return render_template("about.html")
 
 @check_user
 @app.route("/users/<int:user_id>")
 def user_page(user_id):
+    """Displays page of user details"""
     return render_template("/users/detail.html")
 
 @check_user
 @app.route('/factor_intro')
 def factor_intro():
+    """A simple blurb explaining what 'external factors' are. Part of signup flow"""
     return render_template("users/factor-info.html")
+
+########################################################################
+# Form routes
 
 @check_user
 @app.route('/external_factors', methods=["GET", "POST"])
@@ -135,6 +138,26 @@ def factors_form():
         return redirect("/medications")
     else:
         return render_template("users/factors_form.html", form=form)
+
+@check_user
+@app.route('/medications', methods=["GET", "POST"])
+def medications_form():
+    """Handle display of/submitting of medications form"""
+
+    form = MedicationsForm()
+
+    if form.validate_on_submit():
+        med = Medication(
+            med_name = form.med_name.data,
+            med_dosage = form.med_dosage.data,
+            user_id = g.user.id
+        )
+        db.session.add(med)
+        db.session.commit()
+        flash("User successfully created. Welcome!", "success")
+        return redirect("/")
+    else:
+        return render_template("users/med_form.html", form=form)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -167,6 +190,8 @@ def logout():
         flash("Error: No user currently logged in.", "danger")
 
     return redirect("/")
+###########################################################################
+# Homepage route
 
 @app.route('/')
 def homepage():
@@ -175,13 +200,19 @@ def homepage():
     - logged in: 100 most recent messages of followed_users
     """
     if not g.user:
+        # Return the homepage for non-logged-in users
         return render_template("home-anon.html")
-    else:
-        if g.user.last_completed_survey == datetime.today().date():
-            survey_done = True
+    else: #User is logged in
+        if 'quote' in session: #Has the QOTD been loaded?
+            quote = session['quote']
         else:
-            survey_done = False
-        return render_template("home.html", survey_done=survey_done)
+            quote = get_quote()
+
+        if g.user.last_completed_survey == datetime.today().date():
+            session['survey_done'] = True
+        else:
+            session['survey_done'] = False
+        return render_template("home.html", quote=quote)
 
 @check_user
 @app.route('/take_survey', methods=["GET", "POST"])
@@ -211,11 +242,12 @@ def take_survey():
         db.session.add(g.user)
         db.session.commit()
         flash("Survey submitted! Good Job!", "success")
+        session['survey_done'] = True
         return redirect("/")
     else:
         return render_template("survey.html", form=form)
 
-#@repeat(every().sunday.at("20:00"))
+
 def create_summaries():
     """Create weekly summaries for every user in the DB
         This is scheduled to happen every Sunday at 8PM.
@@ -265,35 +297,12 @@ def show_summaries():
     summaries = Summary.query.filter_by(user_id=g.user.id).all()
     return render_template("/users/summaries.html", summaries=summaries)
 
-
-@check_user
-@app.route('/medications', methods=["GET", "POST"])
-def medications_form():
-    """Handle display of/submitting of medications form"""
-
-    form = MedicationsForm()
-
-    if form.validate_on_submit():
-        med = Medication(
-            med_name = form.med_name.data,
-            med_dosage = form.med_dosage.data,
-            user_id = g.user.id
-        )
-        db.session.add(med)
-        db.session.commit()
-        flash("User successfully created. Welcome!", "success")
-        return redirect("/")
-    else:
-        return render_template("users/med_form.html", form=form)
-
-
 @check_user
 @app.route("/medications", methods=["GET", "POST"])
 def show_medications():
     """Show user medications"""
     pass
 
-#@repeat(every(5).minutes)
 def send_reminder_emails():
     """Writes and sends reminder email to users who haven't 
         yet completed their survey today
@@ -334,12 +343,11 @@ def add_header(req):
     req.headers['Cache-Control'] = 'public, max-age=0'
     return req
 
-# while True:
-#     run_pending()
-#     time.sleep(1)
-
-scheduler.add_job(send_reminder_emails, "interval", minutes=1)
+#################
+# Here we schedule the send_reminder_emails function to run every 2 minutes
+# And schedule the create_summaries function to run every Sunday at 20:00
+scheduler.add_job(send_reminder_emails, "interval", minutes=2)
 scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='sun', hour=20)
 scheduler.start()
 
-atexit.register(lambda: scheduler.shutdown())
+atexit.register(lambda: scheduler.shutdown()) #shutdown scheduler on app exit

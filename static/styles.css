@@ -23,11 +23,18 @@ nav img {
 }
 
 ul.navbar-right li {
-    margin: 7px;
+    margin: 5px;
 }
 
 .form-control {
     margin-bottom: 20px;
+}
+
+.user-detail, .about-detail {
+    background-color: rgba(22, 110, 14, 0.329);
+    border-radius: 10px;
+    margin-top: 20px;
+    padding: 20px;
 }
 
 .user-detail img {
@@ -52,6 +59,8 @@ i {
 .signup {
     background-color: rgba(32, 208, 16, 0.329);
     border-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 button {

@@ -14,11 +14,12 @@
             <h5><b>Average External Factor Rating: </b> {{sum.average_ef}}</h5>
             <h5><b>Average Medication Rating: </b> {{sum.average_med}}</h5>
             <hr>
-            <h4><b>Medication Effectiveness Score: </b> {{sum.average_mood + sum.average_ef}}</h4>
+            <h4><b>Medication Effectiveness Score: </b> {{sum.med_effectiveness_score}}</h4>
         </div>
     {%endfor%}
 
 {%else%}
+        <hr>
     <h3>No Summaries yet! Check back Sunday at 8PM.</h3>
 {%endif%}
 

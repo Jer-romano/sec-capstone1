@@ -1,5 +1,5 @@
 from confidential import password
-import smtplib, ssl
+import smtplib, ssl, requests
 from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -36,3 +36,26 @@ def send_reminder(recipient):
     finally:
         s.quit()
 
+
+def get_quote():
+    """Retrieve 'Quote of the Day' from API"""
+     # Make the API request
+    api_url = 'https://quotel-quotes.p.rapidapi.com/quotes/qod'
+    headers = {
+        'content-type': 'application/json',
+        'X-RapidAPI-Key': 'ce897d0754msh4c33bd40d7a0810p106de7jsn0f74d5e06259',
+        'X-RapidAPI-Host': 'quotel-quotes.p.rapidapi.com'
+    }
+    response = requests.post(api_url, headers=headers, json={'topicId': 100})
+
+    if response.status_code == 200:
+        data = response.json()
+        text = data.get('quote', '')
+        author = data.get('name', '')
+
+        quote = {"text": text, "author": author}
+
+    else:
+        quote = 'Failed to retrieve quote'
+    
+    return quote
