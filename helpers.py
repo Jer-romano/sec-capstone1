@@ -1,4 +1,4 @@
-from confidential import password
+from confidential import password, api_key
 import smtplib, ssl, requests
 from string import Template
 from email.mime.multipart import MIMEMultipart
@@ -43,7 +43,7 @@ def get_quote():
     api_url = 'https://quotel-quotes.p.rapidapi.com/quotes/qod'
     headers = {
         'content-type': 'application/json',
-        'X-RapidAPI-Key': 'ce897d0754msh4c33bd40d7a0810p106de7jsn0f74d5e06259',
+        'X-RapidAPI-Key': api_key,
         'X-RapidAPI-Host': 'quotel-quotes.p.rapidapi.com'
     }
     response = requests.post(api_url, headers=headers, json={'topicId': 100})
