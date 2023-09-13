@@ -1,27 +1,37 @@
 {% extends 'base.html' %}
 
 {% block navbar %}
-<nav class="navbar navbar-expand">
+<nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
       <div class="navbar-header">
         <a href="/" class="navbar-brand">
           <img src="/static/images/optimal_logo.png" alt="logo">
           <span>Optimal</span>
         </a>
-        <a href="/about" class="btn btn-primary">About</a>
+        <a href="/about" class="nav-btn">About</a>
+        {% if g.user %}
+          {% if not session['survey_done'] %}
+              <a href="/take_survey" class="nav-btn">Take Survey</a>
+          {% endif %}
+          <a href="/show_summaries" class="nav-btn">Summaries</a>
+        {% endif %}
       </div>
       <ul class="nav navbar-nav navbar-right">
-            <li>Logged in as: {{ g.user.username }}</li>
+        {% if g.user %}
+            <li>
+              Logged in as:
+              <a href="/users/{{g.user.id}}"><b>{{ g.user.username }}</b></a>
+            </li>
             <li>
             <a href="/users/{{ g.user.id }}">
                 <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
             </a>
             </li>
-            {% if not session['survey_done'] %}
-                <li> <a href="/take_survey" class="btn btn-success">Take Survey</a></li>
-            {% endif %}
-            <li> <a href="/show_summaries" class="btn btn-secondary">Summaries</a></li>
             <li><a href="/logout" class="btn btn-warning">Log out</a></li>
+        {% else %}
+           <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
+           <li><a href="/login" class="btn btn-success">Log in</a></li>
+        {% endif %}
       </ul>
     </div>
   </nav>

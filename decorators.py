@@ -5,7 +5,7 @@ def check_user(func):
     @functools.wraps(func)
     def wrapper_check_user(*args, **kwargs):
         if not g.user:
-            flash("Access unauthorized.", "danger")
+            flash("Access unauthorized. Requires log-in.", "danger")
             return redirect("/")
         func(*args, **kwargs)
         return func(*args, **kwargs)

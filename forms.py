@@ -20,7 +20,8 @@ class RatingForm(FlaskForm):
 class UserAddForm(FlaskForm):
     """Form for adding users."""
     username = StringField('Username', validators=[DataRequired(), Length(max=40)])
-    email = StringField('E-mail', validators=[DataRequired(), Length(max=40), Email(message="Invalid email.")])
+    email = StringField('E-mail', validators=[DataRequired(), Length(max=40),
+                         Email(message="Invalid email.")])
     password = PasswordField("Password", validators=[InputRequired(), Length(min=6, max=30),
                             EqualTo('confirm', message="Passwords must match.")])
     confirm = PasswordField("Confirm Password", validators=[InputRequired()])
@@ -29,6 +30,17 @@ class UserAddForm(FlaskForm):
     #num_of_meds = SelectField("How many medications are you currently taking?", choices=nums)
     survey_reminder_time = TimeField("Survey Reminder Time",  default=datetime.now(),
      validators=[InputRequired()])
+
+class EditUserForm(FlaskForm):
+    """Form for editing user info"""
+    email = StringField('E-mail', validators=[DataRequired(), Length(max=40),
+                         Email(message="Invalid email.")])
+    image_url = StringField('(Optional) Profile Image URL')
+    
+    survey_reminder_time = TimeField("Survey Reminder Time", validators=[InputRequired()])
+    password = PasswordField("Confirm Password", 
+                            validators=[InputRequired(), Length(min=6, max=30)])
+
 
 class ExternalFactorsForm(FlaskForm):
     """Form for recording external factors relevant to user"""

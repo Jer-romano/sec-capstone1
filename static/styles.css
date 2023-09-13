@@ -1,5 +1,19 @@
 .navbar {
-    background-color: rgba(0, 174, 255, 0.5);
+    background-color: #3a9ade;
+
+}
+
+.nav-btn {
+   text-decoration: none;
+   font-size: large;
+   color: white;
+   padding: 10px;
+   margin: 5px;
+   border-radius: 5px;
+}
+
+.nav-btn:hover {
+    background-color: #1c5f90;
 }
 
 a.navbar-brand {
@@ -8,6 +22,7 @@ a.navbar-brand {
 
 div.navbar-header > a > span {
     font-family: 'Noto Serif', 'Georgia', serif;
+    color: white;
 }
 
 
@@ -19,7 +34,7 @@ nav li {
 nav img {
     max-width: 60px;
     max-height: 60px;
-    border: 1px solid black;
+    border: 1px solid white;
 }
 
 ul.navbar-right li {
@@ -34,7 +49,17 @@ ul.navbar-right li {
     background-color: rgba(22, 110, 14, 0.329);
     border-radius: 10px;
     margin-top: 20px;
+    margin-bottom: 40px;
     padding: 20px;
+}
+
+.big-bm {
+    margin-bottom: 30px;
+}
+
+.three-steps {
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 
 .user-detail img {
@@ -56,11 +81,21 @@ i {
     height: 50px;
 }
 
-.signup {
+.signup, .summary-card {
     background-color: rgba(32, 208, 16, 0.329);
     border-radius: 10px;
     margin-top: 20px;
     margin-bottom: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.login {
+    background-color: rgba(27, 184, 220, 0.31);
+    border-radius: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 button {

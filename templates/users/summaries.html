@@ -5,11 +5,11 @@
 {%if summaries %}
     {% for sum in summaries %}
         <div class="summary-card">
-            <h4>Summary for {{sum.start_date}} - {{sum.end_date}}</h4>
+            <h4>Summary for : {{sum.start_date}} - {{sum.end_date}}</h4>
             <hr>
             <h5><b>Surveys Completed: </b> {{sum.surveys_completed}}</h5>
             <h5><b>All Medications taken on : </b> 
-                {{sum.num_of_days_meds_taken}} out of {{sum.duration}} days</h5>
+                {{sum.num_days_took_all_meds}} out of {{sum.duration}} days</h5>
             <h5><b>Average Mood: </b> {{sum.average_mood}}</h5>
             <h5><b>Average External Factor Rating: </b> {{sum.average_ef}}</h5>
             <h5><b>Average Medication Rating: </b> {{sum.average_med}}</h5>

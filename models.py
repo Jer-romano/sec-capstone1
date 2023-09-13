@@ -1,6 +1,6 @@
 """SQLAlchemy models"""
 
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -195,8 +195,8 @@ class Rating(db.Model):
         db.String(140),
     )
 
-    timestamp = db.Column(
-        db.DateTime,
+    date = db.Column(
+        db.Date,
         nullable=False,
         default=datetime.now(),
     )
@@ -227,12 +227,12 @@ class Summary(db.Model):
     )
 
     start_date = db.Column(
-                db.Date,
+                db.String(50),
                 nullable=False
     )
 
     end_date = db.Column(
-                db.Date,
+                db.String(50),
                 nullable=False
     )
 
@@ -242,25 +242,25 @@ class Summary(db.Model):
     )
 
     average_mood = db.Column(
-                db.Float,
+                db.DECIMAL(precision=3, scale=2),
                 nullable=False
     )
 
-    num_of_days_meds_taken = db.Column(
+    num_days_took_all_meds = db.Column(
                 db.Integer,
                 nullable=False
     )
 
     average_ef = db.Column(
-                db.Float
+                db.DECIMAL(precision=3, scale=2)
     )
 
     average_med = db.Column(
-                db.Float
+                db.DECIMAL(precision=3, scale=2)
     )
 
     med_effectiveness_score = db.Column(
-                db.Float
+                db.DECIMAL(precision=4, scale=2)
     )
 
     user_id = db.Column(
@@ -310,5 +310,4 @@ def connect_db(app):
 
 def find_past_date(num_days):
 
-    date = datetime.date.today() - datetime.timedelta(days=num_days)
-    return date
+    return date.today() - timedelta(days=num_days)

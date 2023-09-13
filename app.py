@@ -1,17 +1,12 @@
 import os, time, atexit
 #from schedule import every, repeat, run_pending
-from datetime import datetime
+from datetime import datetime, date
 from flask import Flask, render_template, request, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from apscheduler.schedulers.background import BackgroundScheduler
 
-# Still need to
-# Test summary function
-# Flash message to user when a new summary is available 
-# Maybe a 'medicines' page where a info about medications can be listed
-
-from forms import UserAddForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
+from forms import UserAddForm, EditUserForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
 from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medication
 from decorators import check_user
 from helpers import send_reminder, get_quote
@@ -21,6 +16,15 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 scheduler = BackgroundScheduler()
 
+# Still need to...
+# Test summary function
+# Flash message to user when a new summary is available 
+# Application appears to be logging people out after an extended period of time (10+ min)
+#Might be due to the scheduler
+# Maybe a 'medicines' page where a info about medications can be listed
+#Because the medicine API returns so much info, is there any point in using it?
+# compress bg images to make them load faster
+
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
 app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -29,15 +33,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
-# TODO
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret") #Change this!!!
+app.config['SECRET_KEY'] = os.urandom(24)
 app.app_context().push()
 toolbar = DebugToolbarExtension(app)
 
-app.debug = True
 connect_db(app)
 
-#db.drop_all()
+Summary.__table__.drop(db.engine)
 db.create_all()
 ##############################################################################
 # User signup/login/logout
@@ -102,14 +104,37 @@ def about_page():
     """Displays a simple page explaining the purpose of the website."""
     return render_template("about.html")
 
-@check_user
 @app.route("/users/<int:user_id>")
+@check_user
 def user_page(user_id):
     """Displays page of user details"""
     return render_template("/users/detail.html")
 
+@app.route("/users/edit", methods=["GET", "POST"])
 @check_user
+def edit_user():
+    """Displays Edit User Form, or handles its submission"""
+
+    form = EditUserForm(obj=g.user)
+    if form.validate_on_submit():
+        if User.authenticate(g.user.username, form.password.data):
+            g.user.email = form.email.data
+            g.user.image_url = form.image_url.data
+            g.user.survey_reminder_time = form.survey_reminder_time.data
+
+            db.session.add(g.user)
+            db.session.commit()
+            return redirect(f"/users/{g.user.id}")
+        else:
+            flash("Password Incorrect.", "danger")
+            return redirect("/")
+    else:
+        return render_template("/users/edit.html", user=g.user, form=form)
+
+
+
 @app.route('/factor_intro')
+@check_user
 def factor_intro():
     """A simple blurb explaining what 'external factors' are. Part of signup flow"""
     return render_template("users/factor-info.html")
@@ -117,8 +142,8 @@ def factor_intro():
 ########################################################################
 # Form routes
 
-@check_user
 @app.route('/external_factors', methods=["GET", "POST"])
+@check_user
 def factors_form():
     """Handle display of/submitting of external factors form"""
 
@@ -139,8 +164,8 @@ def factors_form():
     else:
         return render_template("users/factors_form.html", form=form)
 
-@check_user
 @app.route('/medications', methods=["GET", "POST"])
+@check_user
 def medications_form():
     """Handle display of/submitting of medications form"""
 
@@ -207,6 +232,7 @@ def homepage():
             quote = session['quote']
         else:
             quote = get_quote()
+            session["quote"] = quote
 
         if g.user.last_completed_survey == datetime.today().date():
             session['survey_done'] = True
@@ -214,8 +240,8 @@ def homepage():
             session['survey_done'] = False
         return render_template("home.html", quote=quote)
 
-@check_user
 @app.route('/take_survey', methods=["GET", "POST"])
+@check_user
 def take_survey():
     "Displays or submits daily survey taken by user."
 
@@ -249,56 +275,60 @@ def take_survey():
 
 
 def create_summaries():
-    """Create weekly summaries for every user in the DB
+    """Create weekly summaries for every user in the DB.
         This is scheduled to happen every Sunday at 8PM.
+        The summary 'time range' is between 12:00AM on
+        the previous Sunday to 11:59PM on Saturday.
     """
-    target_date = find_past_date(7)
-    users = User.query.all()
-    summary_list = []
-    for user in users:
-        ratings = Rating.query.filter(Rating.timestamp.date() > target_date,
-                                      user_id=user.id).all()
-        print("Rating: " + ratings)
-        if ratings:
-            numb_ratings = len(ratings)
-            took_all_meds_sum = 0
-            for rating in ratings:
-                mood_rating_sum += rating.mood
-                med_rating_sum += rating.med_rating
-                ef_rating_sum += rating.ef_rating
+    with app.app_context():
+        target_date = find_past_date(7)
+        users = User.query.all()
+        summary_list = []
+        print("Number of users: " + str(len(users)))
+        for user in users:
+            ratings = Rating.query.filter(Rating.date > target_date,
+                                          Rating.date != date.today(),
+                                        Rating.user_id == user.id).all()
+            print("Ratings: " + str(len(ratings)))
+            if ratings:
+                numb_ratings = len(ratings)
+                
+                mood_ratings = [rating.mood for rating in ratings]
+                med_ratings = [rating.med_rating for rating in ratings]
+                ef_ratings = [rating.ef_rating for rating in ratings]
+                took_all_meds_flags = [rating.took_all_meds for rating in ratings]
 
-                if rating.took_all_meds:
-                    took_all_meds_sum += 1
+                avg_mood = sum(mood_ratings) / numb_ratings
+                avg_med_rating = sum(med_ratings) / numb_ratings
+                avg_ef_rating = sum(ef_ratings) / numb_ratings
+                took_all_meds_sum = sum(took_all_meds_flags)
+                end_date = find_past_date(1) #The last day is one day before
+                summary = Summary(duration=7,
+                                start_date=target_date.strftime('%d %b %Y'),
+                                end_date=end_date.strftime('%d %b %Y'),
+                                surveys_completed=numb_ratings,
+                                average_mood=avg_mood,
+                                num_days_took_all_meds=took_all_meds_sum,
+                                average_ef=avg_ef_rating,
+                                average_med=avg_med_rating,
+                                user_id=user.id,
+                                med_effectiveness_score = avg_mood + avg_ef_rating
+                                )
+                summary_list.append(summary)
+        
+        db.session.add_all(summary_list)
+        db.session.commit()
+       #flash("A new Summary is available!", "success")
 
-            avg_mood = mood_rating_sum / numb_ratings
-            avg_med_rating = med_rating_sum / numb_ratings
-            avg_ef_rating = ef_rating_sum / numb_ratings
-
-            summary = Summary(duration=7,
-                            start_date=target_date,
-                            end_date=datetime.today().date(),
-                            surveys_completed=numb_ratings,
-                            average_mood=avg_mood,
-                            num_of_days_meds_taken=took_all_meds_sum,
-                            average_ef=avg_ef_rating,
-                            average_med=avg_med_rating,
-                            user_id=user.id,
-                            med_effectiveness_score = avg_mood + avg_ef_rating
-                            )
-            summary_list.append(summary)
-    
-    db.session.add_all(summary_list)
-    db.session.commit()
-
-@check_user
 @app.route("/show_summaries")
+@check_user
 def show_summaries():
     """Display page of past summaries for the User."""
     summaries = Summary.query.filter_by(user_id=g.user.id).all()
     return render_template("/users/summaries.html", summaries=summaries)
 
-@check_user
 @app.route("/medications", methods=["GET", "POST"])
+@check_user
 def show_medications():
     """Show user medications"""
     pass
@@ -307,9 +337,9 @@ def send_reminder_emails():
     """Writes and sends reminder email to users who haven't 
         yet completed their survey today
         Have to check that
-         1) The current time is 'past' a user's survey reminder time.
+         1) The user hasn't completed a survey today.
          2) The user hasn't already been sent a reminder email today
-         3) The user hasn't completed a survey today. 
+         3) The current time is 'past' a user's survey reminder time.
         """ 
     with app.app_context():
         today = datetime.now()
@@ -347,7 +377,7 @@ def add_header(req):
 # Here we schedule the send_reminder_emails function to run every 2 minutes
 # And schedule the create_summaries function to run every Sunday at 20:00
 scheduler.add_job(send_reminder_emails, "interval", minutes=2)
-scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='sun', hour=20)
+scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='tue', hour=20, minute=39)
 scheduler.start()
 
 atexit.register(lambda: scheduler.shutdown()) #shutdown scheduler on app exit

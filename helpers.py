@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 
 
 def read_template(filename):
+    """Reads email template message and returns string Template"""
     with open(filename, 'r', encoding='utf-8') as template_file:
         t_file_content = template_file.read()
     return Template(t_file_content)
@@ -54,8 +55,7 @@ def get_quote():
         author = data.get('name', '')
 
         quote = {"text": text, "author": author}
-
     else:
-        quote = 'Failed to retrieve quote'
+        quote = {"text": 'Failed to retrieve quote', "author": None}
     
     return quote
