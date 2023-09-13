@@ -1,5 +1,5 @@
 # Capstone
-## Website Name: TBD
+## Website Name: Optimal
 
 ### About
 The goal of my website is to help patients taking antidepressants find the best drug for them. It will incorporate some of the features of a "mood tracker"
