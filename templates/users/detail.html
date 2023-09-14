@@ -3,13 +3,20 @@
 <div class="user-detail">
     <h2>User Info</h2>
     <img src="{{ g.user.image_url }}" alt="A picture of {{ g.user.username }}">
-    <h5> <u>Username:</u>  <i>{{g.user.username }}</i></h5>
-    <h5> <u>Email:</u>  <i>{{g.user.email }}</i></h5>
+    <h5> <u>Username:</u> <i>{{g.user.username }}</i></h5>
+    <h5> <u>Email:</u> <i>{{g.user.email }}</i></h5>
     <h5> <u>Survey Reminder Time:</u> <i>{{g.user.survey_reminder_time }}</i></h5>
     <h5> <u>Surveys Completed:</u> <i>{{g.user.surveys_completed }}</i></h5>
     <h5> <u>Member Since:</u> <i>{{g.user.member_since }}</i></h5>
 
     <a href="/users/edit" class="btn btn-primary">Edit</a>
-    <a href="/users/{{ g.user.id }}/delete" class="btn btn-danger">Delete</a>
+    <button id="delete-usr" class="btn btn-danger">Delete</button>
 </div>
+
+<div class="confirm-delete hidden">
+    <p><b>Are you sure you want to delete your account? All data will be lost.</b></p>
+    <button class="btn btn-secondary" id="cancel-delete">Cancel</button>
+    <a href="/users/delete" id="confirm-delete-usr" class="btn btn-danger">Yes</a>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 {% endblock %}

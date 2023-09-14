@@ -8,13 +8,14 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from forms import UserAddForm, EditUserForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
 from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medication
-from decorators import check_user
+from decorators import login_required
 from helpers import send_reminder, get_quote
 
 CURR_USER_KEY = "curr_user"
 
-app = Flask(__name__)
 scheduler = BackgroundScheduler()
+
+app = Flask(__name__)
 
 # Still need to...
 # Test summary function
@@ -39,7 +40,7 @@ toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-Summary.__table__.drop(db.engine)
+#Summary.__table__.drop(db.engine)
 db.create_all()
 ##############################################################################
 # User signup/login/logout
@@ -105,13 +106,13 @@ def about_page():
     return render_template("about.html")
 
 @app.route("/users/<int:user_id>")
-@check_user
+@login_required
 def user_page(user_id):
     """Displays page of user details"""
     return render_template("/users/detail.html")
 
 @app.route("/users/edit", methods=["GET", "POST"])
-@check_user
+@login_required
 def edit_user():
     """Displays Edit User Form, or handles its submission"""
 
@@ -131,10 +132,21 @@ def edit_user():
     else:
         return render_template("/users/edit.html", user=g.user, form=form)
 
+@app.route('/users/delete', methods=["POST"])
+@login_required
+def delete_user():
+    """Delete user."""
+    do_logout()
+
+    db.session.delete(g.user)
+    db.session.commit()
+
+    flash("User account deleted successfully.", "success")
+    return redirect("/signup")
 
 
 @app.route('/factor_intro')
-@check_user
+@login_required
 def factor_intro():
     """A simple blurb explaining what 'external factors' are. Part of signup flow"""
     return render_template("users/factor-info.html")
@@ -143,7 +155,7 @@ def factor_intro():
 # Form routes
 
 @app.route('/external_factors', methods=["GET", "POST"])
-@check_user
+@login_required
 def factors_form():
     """Handle display of/submitting of external factors form"""
 
@@ -165,7 +177,7 @@ def factors_form():
         return render_template("users/factors_form.html", form=form)
 
 @app.route('/medications', methods=["GET", "POST"])
-@check_user
+@login_required
 def medications_form():
     """Handle display of/submitting of medications form"""
 
@@ -224,6 +236,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
+    print("Config: " + str(app.config['PERMANENT_SESSION_LIFETIME'].total_seconds()))
     if not g.user:
         # Return the homepage for non-logged-in users
         return render_template("home-anon.html")
@@ -241,7 +254,7 @@ def homepage():
         return render_template("home.html", quote=quote)
 
 @app.route('/take_survey', methods=["GET", "POST"])
-@check_user
+@login_required
 def take_survey():
     "Displays or submits daily survey taken by user."
 
@@ -321,14 +334,14 @@ def create_summaries():
        #flash("A new Summary is available!", "success")
 
 @app.route("/show_summaries")
-@check_user
+@login_required
 def show_summaries():
     """Display page of past summaries for the User."""
     summaries = Summary.query.filter_by(user_id=g.user.id).all()
     return render_template("/users/summaries.html", summaries=summaries)
 
 @app.route("/medications", methods=["GET", "POST"])
-@check_user
+@login_required
 def show_medications():
     """Show user medications"""
     pass
@@ -377,7 +390,8 @@ def add_header(req):
 # Here we schedule the send_reminder_emails function to run every 2 minutes
 # And schedule the create_summaries function to run every Sunday at 20:00
 scheduler.add_job(send_reminder_emails, "interval", minutes=2)
-scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='tue', hour=20, minute=39)
+scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='wed', hour=22, minute=5)
 scheduler.start()
+
 
 atexit.register(lambda: scheduler.shutdown()) #shutdown scheduler on app exit

@@ -1,7 +1,7 @@
 import functools
 from flask import g, redirect, flash
 
-def check_user(func):
+def login_required(func):
     @functools.wraps(func)
     def wrapper_check_user(*args, **kwargs):
         if not g.user:
