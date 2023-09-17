@@ -1,6 +1,6 @@
-#from config import password, api_key
-
-import os, smtplib, ssl, requests
+from config import password, api_key
+import smtplib, ssl, requests
+#import os
 from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -30,7 +30,7 @@ def send_reminder(recipient):
     msg.attach(MIMEText(message, 'plain'))
 
     try:
-        s.login(sender_email, os.environ.get("GM_PASSWORD"))
+        s.login(sender_email, password)
         s.send_message(msg)
         del msg
     except Exception as e:
@@ -45,7 +45,7 @@ def get_quote():
     api_url = 'https://quotel-quotes.p.rapidapi.com/quotes/qod'
     headers = {
         'content-type': 'application/json',
-        'X-RapidAPI-Key': os.environ.get("QUOTE_API_KEY"),
+        'X-RapidAPI-Key': api_key,
         'X-RapidAPI-Host': 'quotel-quotes.p.rapidapi.com'
     }
     response = requests.post(api_url, headers=headers, json={'topicId': 100})
