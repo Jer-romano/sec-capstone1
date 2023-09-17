@@ -42,14 +42,24 @@ class EditUserForm(FlaskForm):
                             validators=[InputRequired(), Length(min=6, max=30)])
 
 
+# class ExternalFactorsForm(FlaskForm):
+#     """Form for recording external factors relevant to user"""
+#     factors = ["None", "Social Interactions", "Level of Exercise", "My Work Day", "My Day at School", "Diet",
+#      "Level of Stress", "Personal Health", "My Productivity", "Sleep Quality"]
+#     ef1 = SelectField("External Factor #1", choices=factors)
+#     ef2 = SelectField("External Factor #2", choices=factors)
+#     ef3 = SelectField("External Factor #3", choices=factors)
+#     ef4 = SelectField("External Factor #4", choices=factors)
+#     ef5 = SelectField("External Factor #5", choices=factors)
+
 class ExternalFactorsForm(FlaskForm):
     """Form for recording external factors relevant to user"""
 
-    ef1 = StringField("External Factor #1")
-    ef2 = StringField("External Factor #2")
-    ef3 = StringField("External Factor #3")
-    ef4 = StringField("External Factor #4")
-    ef5 = StringField("External Factor #5")
+    ef1 = StringField("External Factor #1", validators=[Length(max=50)])
+    ef2 = StringField("External Factor #2", validators=[Length(max=50)])
+    ef3 = StringField("External Factor #3", validators=[Length(max=50)])
+    ef4 = StringField("External Factor #4", validators=[Length(max=50)])
+    ef5 = StringField("External Factor #5", validators=[Length(max=50)])
 
 # class MedForm(FlaskForm):
 #     """Form for recording a single medication"""

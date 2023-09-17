@@ -6,15 +6,13 @@ $(document).ready(function() {
     const confirm_delete = $("#confirm-delete-usr");
     const cancel_delete = $("#cancel-delete");
 
-
-    delete_user.on("click", function() {
+    delete_user.on("click", function() { // show confirmation box
         $("div.confirm-delete").removeClass("hidden");
     });
 
-    cancel_delete.on("click", function() {
+    cancel_delete.on("click", function() { // hide confirmation box
         $("div.confirm-delete").addClass("hidden");
     });
-
 
     async function sendDeleteRequest() {
         try {

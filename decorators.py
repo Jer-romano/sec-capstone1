@@ -3,11 +3,10 @@ from flask import g, redirect, flash
 
 def login_required(func):
     @functools.wraps(func)
-    def wrapper_check_user(*args, **kwargs):
+    def wrapper_login_required(*args, **kwargs):
         if not g.user:
             flash("Access unauthorized. Requires log-in.", "danger")
             return redirect("/")
-        func(*args, **kwargs)
         return func(*args, **kwargs)
 
-    return wrapper_check_user
+    return wrapper_login_required

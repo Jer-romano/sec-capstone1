@@ -22,7 +22,19 @@ a.navbar-brand {
 
 div.navbar-header > a > span {
     font-family: 'Noto Serif', 'Georgia', serif;
+    
     color: white;
+}
+
+div.login-logo > a > img {
+    max-width: 150px;
+    max-height: 150px;
+}
+
+div.login-logo > a > span {
+    font-family: 'Noto Serif', 'Georgia', serif;
+    font-size: x-large;
+    color: black;
 }
 
 #optimal-anchor {
@@ -100,6 +112,10 @@ i {
 
 .filler {
     height: 50px;
+}
+
+.mrg-left {
+    margin-left: 15px;
 }
 
 .signup, .summary-card {

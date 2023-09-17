@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -37,14 +38,6 @@ class User(db.Model):
         nullable=False,
     )
 
-    # first_name = db.Column(
-    #     db.String(25),
-    # )
-
-    # last_name = db.Column(
-    #     db.String(25),
-    # )
-
     image_url = db.Column(
         db.Text,
         default="/static/images/user_icon.jpeg",
@@ -77,6 +70,16 @@ class User(db.Model):
         nullable=False,
         default=0
     )
+
+    factors = db.relationship(
+        'E_Factor',
+        secondary="users_factors"
+       # primaryjoin= (User_Factor_Pair.user_id == id)
+    )
+
+    surveys = relationship("Survey", cascade="all, delete-orphan", back_populates="author")
+    summaries = relationship("Summary", cascade="all, delete-orphan", back_populates="patient")
+    meds = relationship("Medication", cascade="all, delete-orphan", back_populates="patient")
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -121,7 +124,7 @@ class User(db.Model):
 
         return False
 
-class ExternalFactor(db.Model):
+class E_Factor(db.Model):
     """A Table for the External Factors that a User reports as affecting their mood"""
     __tablename__ = 'factors'
    
@@ -130,38 +133,32 @@ class ExternalFactor(db.Model):
         primary_key=True,
     )
 
-    ef1_name = db.Column(
-        db.String(50)
+    name = db.Column(
+        db.String(50),
+        nullable=False
     )
 
-    ef2_name = db.Column(
-        db.String(50)
-    )
-
-    ef3_name = db.Column(
-        db.String(50)
-    )
-
-    ef4_name = db.Column(
-        db.String(50)
-    )
-
-    ef5_name = db.Column(
-        db.String(50)
+class User_Factor_Pair(db.Model):
+    """A Table for joining a user to a specific external factor they have reported."""
+    __tablename__ = 'users_factors'
+   
+    factor_id = db.Column(
+        db.Integer,
+        db.ForeignKey('factors.id',),
+        primary_key=True
     )
 
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
+        primary_key=True
     )
 
-    user = db.relationship('User')
 
-class Rating(db.Model):
+class Survey(db.Model):
     """A daily rating completed by the User."""
 
-    __tablename__ = 'ratings'
+    __tablename__ = 'surveys'
 
     id = db.Column(
         db.Integer,
@@ -177,11 +174,6 @@ class Rating(db.Model):
         db.Boolean,
         nullable=False
     )
-
-    # ef_effect = db.Column(
-    #     db.Boolean,
-    #     nullable=False
-    # )
 
     ef_rating = db.Column(
         db.Integer
@@ -204,10 +196,10 @@ class Rating(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete='CASCADE'),
-        nullable=False,
+        nullable=False
     )
 
-    user = db.relationship('User', backref="ratings")
+    author = relationship("User", back_populates="surveys")
 
 
 class Summary(db.Model):
@@ -269,7 +261,8 @@ class Summary(db.Model):
         nullable=False,
     )
 
-    user = db.relationship('User')
+    patient = relationship("User", back_populates="summaries")
+
 
 class Medication(db.Model):
     """A model for storing the medications a user is taking."""
@@ -296,7 +289,8 @@ class Medication(db.Model):
         nullable=False,
     )
 
-    user = db.relationship('User', backref="meds")
+    patient = relationship("User", back_populates="meds")
+
 
 
 def connect_db(app):

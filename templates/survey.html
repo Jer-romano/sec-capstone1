@@ -34,8 +34,20 @@
             {% for error in field.errors %}
                   <span class="text-danger">{{ error }}</span>
             {% endfor %}
-            {{ field.label }}
-            {{ field( class="form-control") }}
+
+            {% if field.name != "ef_effect" %}
+                {{ field.label }}
+                {{ field( class="form-control") }}
+            {% else %}
+                <h6>As a reminder, the external factors you input were: </h6>
+                <ol>
+                  {%for factor in factors%}
+                    <li>{{ factor.name }} </li>
+                  {% endfor %}
+                </ol>
+                {{ field.label }}
+                {{ field( class="form-control") }}
+            {% endif %}
           {% endfor %}
         <button class="btn btn-primary btn-lg btn-block">Submit</button>
       </form>

@@ -1,4 +1,4 @@
-import os, time, atexit
+import os, time, atexit, pdb
 #from schedule import every, repeat, run_pending
 from datetime import datetime, date
 from flask import Flask, render_template, request, flash, redirect, session, g, jsonify
@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from forms import UserAddForm, EditUserForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
-from models import db, connect_db, find_past_date, User, Rating, Summary, ExternalFactor, Medication
+from models import db, connect_db, find_past_date, User, Survey, Summary, E_Factor, User_Factor_Pair, Medication
 from decorators import login_required
 from helpers import send_reminder, get_quote
 
@@ -39,8 +39,14 @@ app.app_context().push()
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-
+app.debug = True
 #Summary.__table__.drop(db.engine)
+# Rating.__table__.drop(db.engine)
+# User_Factor_Pair.__table__.drop(db.engine)
+# Medication.__table__.drop(db.engine)
+# User.__table__.drop(db.engine)
+
+db.drop_all()
 db.create_all()
 ##############################################################################
 # User signup/login/logout
@@ -136,12 +142,18 @@ def edit_user():
 @login_required
 def delete_user():
     """Delete user."""
-    do_logout()
 
-    db.session.delete(g.user)
-    db.session.commit()
+    try:
+        db.session.delete(g.user)
+        do_logout()
+        db.session.commit()
+        flash("User account deleted successfully.", "success")
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting user: {str(e)}")
+    finally:
+        db.session.close()
 
-    flash("User account deleted successfully.", "success")
     return redirect("/signup")
 
 
@@ -162,19 +174,71 @@ def factors_form():
     form = ExternalFactorsForm()
 
     if form.validate_on_submit():
-        factors = ExternalFactor(
-            ef1_name = form.ef1.data,
-            ef2_name = form.ef2.data,
-            ef3_name = form.ef3.data,
-            ef4_name = form.ef4.data,
-            ef5_name = form.ef5.data,
-            user_id = g.user.id
-        )
-        db.session.add(factors)
+        #pdb.set_trace()
+        ef1 = form.ef1.data
+        ef2 = form.ef2.data
+        ef3 = form.ef3.data
+        ef4 = form.ef4.data
+        ef5 = form.ef5.data
+        
+        existing_factors = []
+        for factor_name in [ef1, ef2, ef3, ef4, ef5]:
+            if factor_name: #Not all factors will be filled out, most likely
+                existing_factor = E_Factor.query.filter_by(name=factor_name).one_or_none()
+                if existing_factor:
+                    print("This shouldn't print: " + existing_factor.name)
+                    existing_factors.append(existing_factor)
+                else:
+                    #Factor doesn't exist yet in the db
+                    new_factor = E_Factor(name=factor_name)
+                    db.session.add(new_factor)
+                    db.session.commit()
+                    # now have to query the db to get the new factor's id
+                    new_factor = E_Factor.query.filter_by(name=factor_name).first()
+                    new_pair = User_Factor_Pair(user_id=g.user.id, factor_id=new_factor.id)
+                    db.session.add(new_pair)
+        
+        db.session.commit()
+        if existing_factors:
+            for factor in existing_factors:
+                new_pair = User_Factor_Pair(user_id=g.user.id, factor_id=factor.id)
+                db.session.add(new_pair)
+
         db.session.commit()
         return redirect("/medications")
     else:
         return render_template("users/factors_form.html", form=form)
+
+# @app.route('/external_factors', methods=["GET", "POST"])
+# @login_required
+# def factors_form():
+#     """Handle display of/submitting of external factors form"""
+
+#     form = ExternalFactorsForm()
+
+#     if form.validate_on_submit():
+#         ef1 = form.ef1.data
+#         ef2 = form.ef2.data
+#         ef3 = form.ef3.data
+#         ef4 = form.ef4.data
+#         ef5 = form.ef5.data
+
+#         id_dict = {"Social Interactions": 1, "Level of Exercise": 2,
+#                   "My Work Day": 3,        "My Day at School": 4,
+#                    "Diet": 5,              "Level of Stress": 6,
+#                   "Personal Health": 7, "My Productivity": 8,
+#                   "Sleep Quality": 9}
+
+#         for factor_name in [ef1, ef2, ef3, ef4, ef5]:
+#             if factor_name != "None": #Not all factors will be filled out, most likely
+#                 new_factor = User_Factor_Pair(user_id=g.user.id, factor_id=id_dict[factor_name])
+#                 db.session.add(new_factor)
+        
+#         db.session.commit()
+#         return redirect("/medications")
+#     else:
+#         return render_template("users/factors_form.html", form=form)
+
 
 @app.route('/medications', methods=["GET", "POST"])
 @login_required
@@ -236,7 +300,7 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    print("Config: " + str(app.config['PERMANENT_SESSION_LIFETIME'].total_seconds()))
+    #print("Config: " + str(app.config['PERMANENT_SESSION_LIFETIME'].total_seconds()))
     if not g.user:
         # Return the homepage for non-logged-in users
         return render_template("home-anon.html")
@@ -269,13 +333,13 @@ def take_survey():
             effect = -1
         else:
             effect = 1
-        rating = Rating(mood = int(form.mood.data),
+        survey = Survey(mood = int(form.mood.data),
                         took_all_meds = took,
                         ef_rating = (int(form.ef_rating.data) * effect),
                         med_rating = int(form.med_rating.data),
                         notes= form.notes.data,
                         user_id= g.user.id)
-        db.session.add(rating)
+        db.session.add(survey)
         g.user.last_completed_survey = datetime.today().date()
         g.user.surveys_completed += 1
         db.session.add(g.user)
@@ -284,7 +348,8 @@ def take_survey():
         session['survey_done'] = True
         return redirect("/")
     else:
-        return render_template("survey.html", form=form)
+        ext_factors = g.user.factors
+        return render_template("survey.html", form=form, factors=ext_factors)
 
 
 def create_summaries():
@@ -299,17 +364,17 @@ def create_summaries():
         summary_list = []
         print("Number of users: " + str(len(users)))
         for user in users:
-            ratings = Rating.query.filter(Rating.date > target_date,
-                                          Rating.date != date.today(),
-                                        Rating.user_id == user.id).all()
-            print("Ratings: " + str(len(ratings)))
-            if ratings:
-                numb_ratings = len(ratings)
+            surveys = Survey.query.filter(Survey.date > target_date,
+                                          Survey.date != date.today(),
+                                        Survey.user_id == user.id).all()
+            print("Ratings: " + str(len(surveys)))
+            if surveys:
+                numb_ratings = len(surveys)
                 
-                mood_ratings = [rating.mood for rating in ratings]
-                med_ratings = [rating.med_rating for rating in ratings]
-                ef_ratings = [rating.ef_rating for rating in ratings]
-                took_all_meds_flags = [rating.took_all_meds for rating in ratings]
+                mood_ratings = [survey.mood for survey in surveys]
+                med_ratings = [survey.med_rating for survey in surveys]
+                ef_ratings = [survey.ef_rating for survey in surveys]
+                took_all_meds_flags = [survey.took_all_meds for survey in surveys]
 
                 avg_mood = sum(mood_ratings) / numb_ratings
                 avg_med_rating = sum(med_ratings) / numb_ratings
@@ -343,7 +408,12 @@ def show_summaries():
 @app.route("/medications", methods=["GET", "POST"])
 @login_required
 def show_medications():
-    """Show user medications"""
+    """Show user medications
+        side effects
+        min and max dosage
+        basic info
+    """
+
     pass
 
 def send_reminder_emails():
