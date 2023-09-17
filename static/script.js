@@ -24,7 +24,10 @@ $(document).ready(function() {
         console.log("User successfully deleted.");
     }
 
-    confirm_delete.on("click", sendDeleteRequest);
+    confirm_delete.on("click", function(e) {
+        e.preventDefault();
+        sendDeleteRequest();
+    });
 
     // const options = {
     //     method: 'POST',
