@@ -9,7 +9,7 @@ website will attempt to quantify the effectiveness of a drug. That way, a patien
 more quantitative feedback to give their doctor than “I think it’s helping”, or, “It’s not helping”.
 
 ### API
-#### Update
+#### Update  
 The API that I am using is a motivational quote API called Quotel. I decided to use this API for the time being because the medicine API can only retrieve very large blocks of text that are too verbose for my application. I'm planning on instead building my own database with the top 100 or so medications and then linking this to my application.  
 ----------
 
