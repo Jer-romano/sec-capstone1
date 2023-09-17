@@ -18,10 +18,7 @@ scheduler = BackgroundScheduler()
 app = Flask(__name__)
 
 # Still need to...
-# Test summary function
 # Flash message to user when a new summary is available 
-# Application appears to be logging people out after an extended period of time (10+ min)
-#Might be due to the scheduler
 # Maybe a 'medicines' page where a info about medications can be listed
 #Because the medicine API returns so much info, is there any point in using it?
 # compress bg images to make them load faster
@@ -39,7 +36,6 @@ app.app_context().push()
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
-app.debug = True
 #Summary.__table__.drop(db.engine)
 # Rating.__table__.drop(db.engine)
 # User_Factor_Pair.__table__.drop(db.engine)
@@ -57,7 +53,6 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY]) 
-        #why does the curr user need to be in the Flask global?
     else:
         g.user = None
 

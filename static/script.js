@@ -26,10 +26,6 @@ $(document).ready(function() {
 
     confirm_delete.on("click", sendDeleteRequest);
 
-
-
-
-
     // const options = {
     //     method: 'POST',
     //     url: 'https://quotel-quotes.p.rapidapi.com/quotes/qod',
@@ -41,27 +37,4 @@ $(document).ready(function() {
     //     data: {topicId: 100}
     // };
 
-    // async function getQuote(options) {
-    //     try {
-    //         const response = await axios.request(options);
-    //         console.log(response.data);
-
-    //         let newDiv = $("<div>"); // Create a new div element
-    //         newDiv.append(`<h3>${response.data["quote"]}</h3>`);
-    //         newDiv.append(`<h4>- ${response.data["name"]}</h4>`);
-            
-    //         return newDiv; // Return the entire div element
-
-    //     } catch(error) {
-    //         console.error(error);
-    //     }
-    // }
-
-    // const quote_div = $("#quote-div");
-    // if (quote_div.length) {
-    //     console.log("hello");
-    //     getQuote(options).then((newDiv) => {
-    //         quote_div.html(newDiv); // Set the HTML content of quote_div to the newDiv
-    //     });
-    // }
 });
