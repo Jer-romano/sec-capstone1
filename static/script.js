@@ -16,18 +16,21 @@ $(document).ready(function() {
 
     async function sendDeleteRequest() {
         try {
-            const request = await axios.post(`${BASE_URL}/users/delete`);
+            const request = await axios.post(`${BASE_URL}/users/delete`)
+            .then(window.location.href = "/");
 
         } catch (err) {
             console.err("sendDeleteRequest function failed: ", err);
         }
         console.log("User successfully deleted.");
     }
+    
+    confirm_delete.on("click", sendDeleteRequest);
 
-    confirm_delete.on("click", function(e) {
-        e.preventDefault();
-        sendDeleteRequest();
-    });
+    // confirm_delete.on("click", function(e) {
+    //     e.preventDefault();
+    //     sendDeleteRequest();
+    // });
 
     // const options = {
     //     method: 'POST',

@@ -148,8 +148,7 @@ def delete_user():
         print(f"Error deleting user: {str(e)}")
     finally:
         db.session.close()
-
-    return redirect("/signup")
+        return redirect("/signup")
 
 
 @app.route('/factor_intro')
