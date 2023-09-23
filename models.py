@@ -46,7 +46,7 @@ class User(db.Model):
     survey_reminder_time = db.Column(
         db.Time,
         nullable=False,
-        default=time.isoformat(timespec='seconds'),
+        default=time(hour=20, minute=0, second=0)
     )
 
     last_completed_survey = db.Column( #The last time the user completed a survey
