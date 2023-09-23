@@ -5,7 +5,7 @@
   <div class="row justify-content-md-center">
   <div class="col-md-7 col-lg-5 signup">
     <h2 class="join-message">Join Optimal today.</h2>
-    <h4 class="join-message">It only takes a few seconds.</h4>
+    <h4 class="join-message">- It only takes a few seconds.</h4>
     <form method="POST" id="user_form">
         {{ form.hidden_tag() }}
 
@@ -17,9 +17,8 @@
           {{ field(class="form-control") }}
         {% endfor %}
         <h5>
-          'Survey Reminder Time' is the time at which you'll receive an email reminding you
-          to complete your daily survey (if you haven't already). Make sure to check your spam
-          folder!
+          - If you forget, you'll receive an email at this time reminding you to complete your survey.
+           Make sure to check your spam folder!
         </h5>
       <button class="btn btn-primary btn-lg btn-block">Continue</button>
     </form>

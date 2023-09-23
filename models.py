@@ -1,6 +1,6 @@
 """SQLAlchemy models"""
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
@@ -46,7 +46,7 @@ class User(db.Model):
     survey_reminder_time = db.Column(
         db.Time,
         nullable=False,
-        default=datetime.now(),
+        default=time.isoformat(timespec='seconds'),
     )
 
     last_completed_survey = db.Column( #The last time the user completed a survey
