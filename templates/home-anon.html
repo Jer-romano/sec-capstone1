@@ -12,8 +12,8 @@
       </div>
       <ul class="nav navbar-nav navbar-right">
         {% if not g.user %}
-          <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
           <li><a href="/login" class="btn btn-success">Log in</a></li>
+          <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
         {% else %}
           <li>
             <a href="/users/{{ g.user.id }}">
