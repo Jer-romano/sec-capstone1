@@ -102,6 +102,8 @@ def signup():
     else:
         return render_template('users/signup.html', form=form)
     
+#############################################################################
+# Page Routes
 @app.route("/about")
 def about_page():
     """Displays a simple page explaining the purpose of the website."""
@@ -113,6 +115,14 @@ def user_page(user_id):
     """Displays page of user details"""
     return render_template("/users/detail.html")
 
+@app.route('/factor_intro')
+@login_required
+def factor_intro():
+    """A simple blurb explaining what 'external factors' are. Part of signup flow"""
+    return render_template("users/factor-info.html")
+
+########################################################################
+# Modify User Routes
 @app.route("/users/edit", methods=["GET", "POST"])
 @login_required
 def edit_user():
@@ -151,13 +161,6 @@ def delete_user():
         db.session.close()
 
     return redirect("/signup")
-
-
-@app.route('/factor_intro')
-@login_required
-def factor_intro():
-    """A simple blurb explaining what 'external factors' are. Part of signup flow"""
-    return render_template("users/factor-info.html")
 
 ########################################################################
 # Form routes
@@ -256,6 +259,40 @@ def medications_form():
     else:
         return render_template("users/med_form.html", form=form)
 
+@app.route('/take_survey', methods=["GET", "POST"])
+@login_required
+def take_survey():
+    "Displays or submits daily survey taken by user."
+
+    form = RatingForm()
+
+    if form.validate_on_submit():
+        if form.took_all_meds.data == "Yes":
+            took = True
+        else:
+            took = False
+        if form.ef_effect.data == "Positively":
+            effect = -1
+        else:
+            effect = 1
+        survey = Survey(mood = int(form.mood.data),
+                        took_all_meds = took,
+                        ef_rating = (int(form.ef_rating.data) * effect),
+                        med_rating = int(form.med_rating.data),
+                        notes= form.notes.data,
+                        user_id= g.user.id)
+        db.session.add(survey)
+        g.user.last_completed_survey = datetime.today().date()
+        g.user.surveys_completed += 1
+        db.session.add(g.user)
+        db.session.commit()
+        flash("Survey submitted! Good Job!", "success")
+        session['survey_done'] = True
+        return redirect("/")
+    else:
+        ext_factors = g.user.factors
+        return render_template("survey.html", form=form, factors=ext_factors)
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Handle user login."""
@@ -313,40 +350,48 @@ def homepage():
             session['survey_done'] = False
         return render_template("home.html", quote=quote)
 
-@app.route('/take_survey', methods=["GET", "POST"])
+@app.route("/show_summaries")
 @login_required
-def take_survey():
-    "Displays or submits daily survey taken by user."
+def show_summaries():
+    """Display page of past summaries for the User."""
+    summaries = Summary.query.filter_by(user_id=g.user.id).all()
+    return render_template("/users/summaries.html", summaries=summaries)
 
-    form = RatingForm()
+@app.route("/medications", methods=["GET", "POST"])
+@login_required
+def show_medications():
+    """Show user medications
+        side effects
+        min and max dosage
+        basic info
+    """
 
-    if form.validate_on_submit():
-        if form.took_all_meds.data == "Yes":
-            took = True
-        else:
-            took = False
-        if form.ef_effect.data == "Positively":
-            effect = -1
-        else:
-            effect = 1
-        survey = Survey(mood = int(form.mood.data),
-                        took_all_meds = took,
-                        ef_rating = (int(form.ef_rating.data) * effect),
-                        med_rating = int(form.med_rating.data),
-                        notes= form.notes.data,
-                        user_id= g.user.id)
-        db.session.add(survey)
-        g.user.last_completed_survey = datetime.today().date()
-        g.user.surveys_completed += 1
-        db.session.add(g.user)
-        db.session.commit()
-        flash("Survey submitted! Good Job!", "success")
-        session['survey_done'] = True
-        return redirect("/")
-    else:
-        ext_factors = g.user.factors
-        return render_template("survey.html", form=form, factors=ext_factors)
+    pass
 
+######################################################################################
+# Background Scheduled Functions
+
+def send_reminder_emails():
+    """Writes and sends reminder email to users who haven't 
+        yet completed their survey today
+        Have to check that
+         1) The user hasn't completed a survey today.
+         2) The user hasn't already been sent a reminder email today
+         3) The current time is 'past' a user's survey reminder time.
+        """ 
+    with app.app_context():
+        today = datetime.now()
+        users_to_remind = User.query.filter(today.time() > User.survey_reminder_time,
+                                            today.date() > User.last_reminder_email,
+                                            today.date() != User.last_completed_survey).all()
+        
+        if users_to_remind:
+            print("found user to remind")
+            for user in users_to_remind:
+                send_reminder(user)
+                user.last_reminder_email = today.date()
+                db.session.add(user)
+            db.session.commit()
 
 def create_summaries():
     """Create weekly summaries for every user in the DB.
@@ -393,46 +438,6 @@ def create_summaries():
         db.session.add_all(summary_list)
         db.session.commit()
        #flash("A new Summary is available!", "success")
-
-@app.route("/show_summaries")
-@login_required
-def show_summaries():
-    """Display page of past summaries for the User."""
-    summaries = Summary.query.filter_by(user_id=g.user.id).all()
-    return render_template("/users/summaries.html", summaries=summaries)
-
-@app.route("/medications", methods=["GET", "POST"])
-@login_required
-def show_medications():
-    """Show user medications
-        side effects
-        min and max dosage
-        basic info
-    """
-
-    pass
-
-def send_reminder_emails():
-    """Writes and sends reminder email to users who haven't 
-        yet completed their survey today
-        Have to check that
-         1) The user hasn't completed a survey today.
-         2) The user hasn't already been sent a reminder email today
-         3) The current time is 'past' a user's survey reminder time.
-        """ 
-    with app.app_context():
-        today = datetime.now()
-        users_to_remind = User.query.filter(today.time() > User.survey_reminder_time,
-                                            today.date() > User.last_reminder_email,
-                                            today.date() != User.last_completed_survey).all()
-        
-        if users_to_remind:
-            print("found user to remind")
-            for user in users_to_remind:
-                send_reminder(user)
-                user.last_reminder_email = today.date()
-                db.session.add(user)
-            db.session.commit()
 
 
 ##############################################################################
