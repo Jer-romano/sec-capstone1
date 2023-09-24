@@ -1,6 +1,6 @@
 #from config import password, api_key
 
-import os, smtplib, ssl, requests
+import os, smtplib, requests
 from string import Template
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText

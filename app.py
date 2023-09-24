@@ -96,7 +96,6 @@ def signup():
             return render_template('users/signup.html', form=form)
 
         do_login(user)
-        db.engine.dispose()
         return redirect("/factor_intro")
 
     else:
@@ -460,6 +459,8 @@ def add_header(req):
 #################
 # Here we schedule the send_reminder_emails function to run every 2 minutes
 # And schedule the create_summaries function to run every Sunday at 20:00
+db.engine.dispose()
+
 scheduler.add_job(send_reminder_emails, "interval", minutes=2)
 scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='wed', hour=22, minute=5)
 scheduler.start()
