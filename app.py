@@ -21,7 +21,6 @@ app = Flask(__name__)
 # Flash message to user when a new summary is available 
 # Maybe a 'medicines' page where a info about medications can be listed
 #Because the medicine API returns so much info, is there any point in using it?
-# compress bg images to make them load faster
 
 # Get DB_URI from environ variable (useful for production/testing) or,
 # if not set there, use development local db.
@@ -44,6 +43,7 @@ connect_db(app)
 
 db.drop_all()
 db.create_all()
+
 ##############################################################################
 # User signup/login/logout
 
