@@ -20,7 +20,7 @@ class RatingForm(FlaskForm):
 class UserAddForm(FlaskForm):
     """Form for adding users."""
     username = StringField('Username', validators=[DataRequired(), Length(max=40)])
-    email = StringField('E-mail', validators=[DataRequired(), Length(max=40),
+    email = StringField('Email', validators=[DataRequired(), Length(max=40),
                          Email(message="Invalid email.")])
     password = PasswordField("Password", validators=[InputRequired(), Length(min=6, max=30),
                             EqualTo('confirm', message="Passwords must match.")])

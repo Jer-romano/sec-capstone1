@@ -9,15 +9,12 @@
           <span id="optimal-anchor">Optimal</span>
         </a>
         <a href="/about" class="nav-btn">About</a>
-        {% if g.user %}
           {% if not session['survey_done'] %}
               <a href="/take_survey" class="nav-btn">Take Survey</a>
           {% endif %}
           <a href="/show_summaries" class="nav-btn">Summaries</a>
-        {% endif %}
       </div>
       <ul class="nav navbar-nav navbar-right">
-        {% if g.user %}
             <li>
               Logged in as:
               <a href="/users/{{g.user.id}}"><b>{{ g.user.username }}</b></a>
@@ -28,10 +25,6 @@
             </a>
             </li>
             <li><a href="/logout" class="btn btn-warning">Log out</a></li>
-        {% else %}
-           <li><a href="/signup" class="btn btn-primary">Sign up</a></li>
-           <li><a href="/login" class="btn btn-success">Log in</a></li>
-        {% endif %}
       </ul>
     </div>
   </nav>

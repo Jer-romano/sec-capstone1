@@ -1,3 +1,8 @@
+body {
+    background-color: #1c5f90;
+    color: white;
+}
+
 .navbar {
     background-color: #47a7eccf;
 
@@ -63,6 +68,8 @@ ul.navbar-right li {
 .user-detail, .about-detail {
     background-color: rgba(22, 110, 14, 0.329);
     border-radius: 10px;
+    border: 2px solid black;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     margin-top: 20px;
     margin-bottom: 40px;
     padding: 20px;

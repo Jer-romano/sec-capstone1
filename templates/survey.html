@@ -7,7 +7,9 @@
           <img src="/static/images/optimal_logo.png" alt="logo">
           <span>Optimal</span>
         </a>
-        <a href="/about" class="btn btn-primary">About</a>
+        <a href="/about" class="nav-btn">About</a>
+        <a href="/take_survey" class="nav-btn">Take Survey</a>
+        <a href="/show_summaries" class="nav-btn">Summaries</a>
       </div>
       <ul class="nav navbar-nav navbar-right">
             <li>Logged in as: {{ g.user.username }}</li>
@@ -16,7 +18,6 @@
                 <img src="{{ g.user.image_url }}" alt="{{ g.user.username }}">
             </a>
             </li>
-            <li> <a href="/show_summaries" class="btn btn-secondary">Summaries</a></li>
             <li><a href="/logout" class="btn btn-warning">Log out</a></li>
       </ul>
     </div>
