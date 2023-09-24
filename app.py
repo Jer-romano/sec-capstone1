@@ -96,6 +96,7 @@ def signup():
             return render_template('users/signup.html', form=form)
 
         do_login(user)
+        db.engine.dispose()
         return redirect("/factor_intro")
 
     else:
