@@ -28,7 +28,7 @@ class UserAddForm(FlaskForm):
     image_url = StringField('(Optional) Profile Image URL')
     #nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     #num_of_meds = SelectField("How many medications are you currently taking?", choices=nums)
-    survey_reminder_time = TimeField("Survey Reminder Time",  default=datetime.now(),
+    survey_reminder_time = TimeField("Survey Reminder Time (Daily)",  default=datetime.now(),
      validators=[InputRequired()])
 
 class EditUserForm(FlaskForm):
@@ -55,9 +55,12 @@ class EditUserForm(FlaskForm):
 class ExternalFactorsForm(FlaskForm):
     """Form for recording external factors relevant to user"""
 
-    ef1 = StringField("External Factor #1", validators=[Length(max=50)])
-    ef2 = StringField("External Factor #2", validators=[Length(max=50)])
-    ef3 = StringField("External Factor #3", validators=[Length(max=50)])
+    ef1 = StringField("External Factor #1",
+    render_kw={"placeholder": "e.g. Exercise"}, validators=[Length(max=50)])
+    ef2 = StringField("External Factor #2",
+    render_kw={"placeholder": "e.g. Socializing"}, validators=[Length(max=50)])
+    ef3 = StringField("External Factor #3",
+    render_kw={"placeholder": "e.g. Productivity"}, validators=[Length(max=50)])
     ef4 = StringField("External Factor #4", validators=[Length(max=50)])
     ef5 = StringField("External Factor #5", validators=[Length(max=50)])
 
