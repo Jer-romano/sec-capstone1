@@ -9,7 +9,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from forms import UserAddForm, EditUserForm, LoginForm, ExternalFactorsForm, RatingForm, MedicationsForm
 from models import db, connect_db, find_past_date, User, Survey, Summary, E_Factor, User_Factor_Pair, Medication
 from decorators import login_required
-from helpers import send_reminder, get_quote
+from helpers import send_reminder, get_quote, send_ping
 
 CURR_USER_KEY = "curr_user"
 
@@ -247,12 +247,28 @@ def medications_form():
     form = MedicationsForm()
 
     if form.validate_on_submit():
-        med = Medication(
-            med_name = form.med_name.data,
-            med_dosage = form.med_dosage.data,
-            user_id = g.user.id
-        )
-        db.session.add(med)
+        if (form.med1_name.data and form.med1_dosage.data):
+            med1 = Medication(
+                med_name = form.med1_name.data,
+                med_dosage = form.med1_dosage.data,
+                user_id = g.user.id
+            )
+            db.session.add(med1)
+        if (form.med2_name.data and form.med2_dosage.data):
+            med2 = Medication(
+                med_name = form.med2_name.data,
+                med_dosage = form.med2_dosage.data,
+                user_id = g.user.id
+            )
+            db.session.add(med2)
+        if (form.med3_name.data and form.med3_dosage.data):
+            med3 = Medication(
+                med_name = form.med3_name.data,
+                med_dosage = form.med3_dosage.data,
+                user_id = g.user.id
+            )
+            db.session.add(med3)
+        
         db.session.commit()
         flash("User successfully created. Welcome!", "success")
         return redirect("/")
@@ -291,7 +307,8 @@ def take_survey():
         return redirect("/")
     else:
         ext_factors = g.user.factors
-        return render_template("survey.html", form=form, factors=ext_factors)
+        meds = g.user.meds
+        return render_template("survey.html", form=form, factors=ext_factors, meds=meds)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -462,6 +479,7 @@ def add_header(req):
 db.engine.dispose()
 
 scheduler.add_job(send_reminder_emails, "interval", minutes=2)
+scheduler.add_job(send_ping, "interval", minutes=12)
 scheduler.add_job(func=create_summaries, trigger='cron', day_of_week='wed', hour=22, minute=5)
 scheduler.start()
 

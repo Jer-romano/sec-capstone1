@@ -60,3 +60,16 @@ def get_quote():
         quote = {"text": 'Failed to retrieve quote', "author": None}
     
     return quote
+
+
+def send_ping():
+    """Send ping to the Keep-Alive site so that Optimal doesn't spin down
+    due to inactivity."""
+    url = "https://keepalivecap.onrender.com/"
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        print("Successfully pinged Keep-Alive website.")
+    else:
+        print("Ping to Keep-Alive unsuccessful.")

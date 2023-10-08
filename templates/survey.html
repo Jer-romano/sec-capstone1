@@ -30,7 +30,13 @@
       <h2 class="join-message">Daily Survey</h2>
       <form method="POST" action="/take_survey">
           {{ form.hidden_tag() }}
-  
+          <h5>Medications you are currently taking:</h5>
+          <ol>
+            {% for med in meds %}
+              <li>{{ med.name }}: {{ med.dosage }}mg</li>
+            {% endfor %}
+          </ol>
+           
           {% for field in form if field.widget.input_type != 'hidden' %}
             {% for error in field.errors %}
                   <span class="text-danger">{{ error }}</span>
