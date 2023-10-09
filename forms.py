@@ -75,11 +75,11 @@ class ExternalFactorsForm(FlaskForm):
 
 class MedicationsForm(FlaskForm):
     """Form for recording all of a user's medications"""
-    med1_name = StringField("Brand Name of Medication", render_kw={"placeholder": "e.g. Prozac"})
+    med1_name = StringField("Brand Name of Medication #1", render_kw={"placeholder": "e.g. Prozac"})
     med1_dosage = IntegerField("Dosage (in mg)", render_kw={"placeholder": "e.g. 50"})
-    med2_name = StringField("Brand Name of Medication")
+    med2_name = StringField("Brand Name of Medication #2")
     med2_dosage = IntegerField("Dosage (in mg)")
-    med3_name = StringField("Brand Name of Medication")
+    med3_name = StringField("Brand Name of Medication #3")
     med3_dosage = IntegerField("Dosage (in mg)")
 
 class LoginForm(FlaskForm):
