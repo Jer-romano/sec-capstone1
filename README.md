@@ -3,7 +3,7 @@
 #### Visit the site here: https://optimal-capstone-app.onrender.com/
 
 ### About
-The goal of my website is to help patients taking antidepressants find the best drug for them. It will incorporate some of the features of a "mood tracker"
+The goal of my website ([Optimal](https://optimal-capstone-app.onrender.com/)) is to help patients taking antidepressants find the best drug for them. It will incorporate some of the features of a "mood tracker"
 app, but will also have some unique features. It can be difficult to rate the effectiveness of an antidepressant, because there are so many outside factors
 that can affect our mood. By having the user record how they feel each day, we can use this
 data to quantify the effectiveness of the drug(s) they are taking. That way, a patient can see to what degree the drug is working, and will have better,
