@@ -397,7 +397,8 @@ def send_reminder_emails():
         """ 
     with app.app_context():
         today = datetime.now()
-        users_to_remind = User.query.filter(today.time() > User.survey_reminder_time,
+        users_to_remind = User.query.filter(User.survey_reminder_time != None,
+                                            today.time() > User.survey_reminder_time,
                                             today.date() > User.last_reminder_email,
                                             today.date() != User.last_completed_survey).all()
         
@@ -419,12 +420,12 @@ def create_summaries():
         target_date = find_past_date(7)
         users = User.query.all()
         summary_list = []
-        print("Number of users: " + str(len(users)))
+        #print("Number of users: " + str(len(users)))
         for user in users:
             surveys = Survey.query.filter(Survey.date > target_date,
                                           Survey.date != date.today(),
                                         Survey.user_id == user.id).all()
-            print("Ratings: " + str(len(surveys)))
+           # print("Ratings: " + str(len(surveys)))
             if surveys:
                 numb_ratings = len(surveys)
                 

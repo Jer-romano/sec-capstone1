@@ -45,7 +45,6 @@ class User(db.Model):
 
     survey_reminder_time = db.Column(
         db.Time,
-        nullable=False,
         default=time(hour=20, minute=0, second=0)
     )
 
