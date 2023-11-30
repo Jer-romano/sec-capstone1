@@ -16,7 +16,7 @@ $(document).ready(function() {
 
     async function sendDeleteRequest() {
         try {
-            const request = await axios.post(`${BASE_URL}/users/delete`)
+            const request = await axios.delete(`${BASE_URL}/users/delete`)
             window.location.href = "/";
 
         } catch (err) {
