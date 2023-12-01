@@ -1,6 +1,6 @@
 """User model tests."""
 
-# run these tests like:
+# to run these tests:
 #
 #    python -m unittest tests/test_user_model.py
 #

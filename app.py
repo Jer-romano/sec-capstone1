@@ -144,7 +144,7 @@ def edit_user():
     else:
         return render_template("/users/edit.html", user=g.user, form=form)
 
-@app.route('/users/delete', methods=["DELETE"])
+@app.route('/users/delete', methods=["GET", "DELETE"])
 @login_required
 def delete_user():
     """Delete user."""
